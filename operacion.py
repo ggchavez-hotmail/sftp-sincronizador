@@ -97,12 +97,10 @@ class Tareas():
                 if (sftp.cod_status == 0):
                     db.update_one({"_id": id}, {
                         "$set": {"estado": "finalizado"}})
-
-    def ListToDeleteOrigen(self):
+        
+    def ListToDeleteDestino(self):
         casillas = self.db.find_item({"operacion": f"{self.proceso}" })
 
-        db = Db_Options(self.params.DBCONEXION, self.params.DBNAME, self.params.DBCLLJOURNAL)
-        
         for casilla in casillas:
             print(casilla)
 
@@ -118,23 +116,58 @@ class Tareas():
             # Que no hubo error al recuperar datos
             if (sftp.cod_status == 0):
                 if (resultado != None):
+                    db = Db_Options(self.params.DBCONEXION, self.params.DBNAME, self.params.DBCLLJOURNAL)
                     for item in resultado:
                         item_buscar = { "$and" : [
                                         {"file_name": f"{item[0]}", "st_mode": f"{item[1]}",
                                          "st_size": f"{item[2]}", "st_atime": f"{item[3]}", "st_mtime": f"{item[4]}",
                                          "casilla": casilla["_id"], "operacion": f"{self.proceso}"},
                                         {"estado": { "$ne" : "eliminar" } }]}
-                        
                         items_encontrados = db.find_item(item_buscar)
-                        
+                        print(f"items_encontrados: {items_encontrados}")
                         for item_encontrado in items_encontrados:
-                            id = item_encontrado['_id']
+                            print(f"item_encontrado: {item_encontrado}")
+                            id = item_encontrado["_id"]
+                            print(f"id: {id}")
                             items_omitir.append(id)
-
+            
+            print(f"items_omitir: {items_omitir}")
+            db = Db_Options(self.params.DBCONEXION, self.params.DBNAME, self.params.DBCLLJOURNAL)
             if (items_omitir != []):
-                db.update_many({ "$and" : [{ "_id": { "$ne" : items_omitir } }, 
+                db.update_many({ "$and" : [{ "_id": { "$nin" : items_omitir } }, 
                                            { "casilla": casilla["_id"], "operacion": f"{self.proceso}" }]},
                                { "$set": {"estado": "eliminar"}})
             else:
                 db.update_many({ "casilla": casilla["_id"], "operacion": f"{self.proceso}" },
                                { "$set": {"estado": "eliminar"}})
+            
+    def DeleteDestino(self):
+        casillas = self.db.find_item({"operacion": f"{self.proceso}" })
+
+        for casilla in casillas:
+            print(casilla)
+
+            sftp = Sftp_Options(casilla["local_sftp_purl"],
+                                casilla["privateKeyFilePath"])
+
+            db = Db_Options(self.params.DBCONEXION, self.params.DBNAME, self.params.DBCLLJOURNAL)
+            existe_item_en_db = db.find_item(
+                {"casilla": casilla["_id"], "operacion": f"{self.proceso}", "estado": "eliminar"})
+            print(casilla["pivot_path"])
+            print(casilla["local_path"])
+            local_path = casilla["pivot_path"]
+            remote_path = casilla["local_path"]
+
+            for item in existe_item_en_db:
+                id = item['_id']
+                file_name = item['file_name']
+                print(f"{id}")
+                print(f"{file_name}")
+                sftp.mdelete(f"{remote_path}{file_name}")
+                print(f"codigo retorno: {sftp.cod_status}")
+                print(f"mensaje retorno: {sftp.msg_status}")
+                if (sftp.cod_status == 0):
+                    db.update_one({"_id": id}, {
+                        "$set": {"estado": "eliminado"}})
+                    
+

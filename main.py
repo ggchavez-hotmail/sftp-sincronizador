@@ -14,6 +14,11 @@ from operacion import Tareas
 #enviarArchivos.GetOrigen()
 #enviarArchivos.PutDestino()
 
-#Eliminar archivo del Origen
+#Verificar que archivos se eliminaron del Origen
+#Marcar los archivos para eliminar en el Destino
 eliminarArchivos = Tareas("get")
-eliminarArchivos.ListToDeleteOrigen()
+#eliminarArchivos.ListToDeleteDestino()
+
+
+#Eliminar archivo del Destino
+eliminarArchivos.DeleteDestino()

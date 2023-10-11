@@ -146,3 +146,21 @@ class Sftp:
 
         except Exception as err:
             raise Exception(err)
+
+
+    def deleteDir(self, remote_path):
+        """
+        Delete the source files from remote sftp server.
+        """
+
+        try:
+            print(
+                f"removing to {self.hostname} as {self.username} [(remote path: {remote_path})])]"
+            )
+
+            # Download file from SFTP
+            self.connection.remove(remote_path)
+            print("delete completed")
+
+        except Exception as err:
+            raise Exception(err)

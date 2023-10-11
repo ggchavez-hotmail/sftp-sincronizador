@@ -23,10 +23,11 @@ class Db_Options:
         return item_details
 
     def find_item(self, item):
+        #print(item)
         item_details = self.collection_name.find(item)
-        # for item in item_details:
-        #    # This does not give a very readable output
-        #    print(item)
+        #for item_res in item_details:
+        #   # This does not give a very readable output
+        #   print(item_res)
 
         return item_details
 
@@ -38,13 +39,13 @@ class Db_Options:
         return count
 
     def update_one(self, item_id, item_update):
-        print(item_id)
-        print(item_update)
+        #print(item_id)
+        #print(item_update)
         self.collection_name.update_one(
             item_id, item_update)
 
     def update_many(self, item_id, item_update):
-        print(item_id)
-        print(item_update)
+        #print(item_id)
+        #print(item_update)
         self.collection_name.update_many(
             item_id, item_update)

@@ -1,0 +1,27 @@
+version: "3"
+
+services:
+  server-remoto:
+    image: gchavezvs2019/server-ssh-alpine
+    container_name: server-remoto
+    ports:
+      - 3000:22
+    volumes:
+      - .remoto:/home/test
+    #command: bash -c "sh .script-server-local.sh" #no funcion
+  server-local:
+    image: gchavezvs2019/server-ssh-alpine
+    container_name: server-local
+    ports:
+      - 3001:22
+    volumes:
+      - .local:/home/test
+    #command: bash -c "sh .script-server-local.sh" #no funcion
+  sftp-sincro:
+    image: python-dev:latest
+    container_name: sftp-sincro
+    environment:
+      - DB_CONEXION=${DB_CONEXION}
+      - DB_NAME=${DB_NAME}
+      - DB_CLL_JOURNAL=${DB_CLL_JOURNAL}
+      - DB_CLL_PARAMS=${DB_CLL_PARAMS}

@@ -124,3 +124,21 @@ class Sftp_Options:
         finally:
             # Disconnect from SFTP
             self.sftp.disconnect()
+
+    def mdelete(self, host_path):
+        try:
+            # Connect to SFTP
+            self.sftp.connect()
+
+            # Download files from SFTP
+            self.sftp.deleteDir(host_path)
+
+            self.cod_status = 0
+            self.msg_status = "Proceso OK"
+        except Exception as err:
+            self.cod_status = 1
+            self.msg_status = f"Error MDelete: {err}"
+
+        finally:
+            # Disconnect from SFTP
+            self.sftp.disconnect()
