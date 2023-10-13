@@ -9,6 +9,9 @@ sftp = None
 
 class Sftp_Options:    
     def __init__(self, sftp_url, privateKeyFilePath):
+        #print(f"sftp_url: {sftp_url}")
+        #print(f"privateKeyFilePath: {privateKeyFilePath}")
+        
         if sftp_url:
             parsed_url = urlparse(sftp_url)
 
@@ -26,6 +29,7 @@ class Sftp_Options:
     def listdir_attr(self, path_list):
         try:
             # Connect to SFTP
+            print(f"--path_list: {path_list}")
             self.sftp.connect()
 
             resultado = self.sftp.listdir_attr(path_list)
@@ -47,7 +51,7 @@ class Sftp_Options:
             # Disconnect from SFTP
             self.sftp.disconnect()
 
-    def get(self, local_path, remote_path):
+    def get(self, local_path, remote_path):        
         try:
             # Connect to SFTP
             self.sftp.connect()

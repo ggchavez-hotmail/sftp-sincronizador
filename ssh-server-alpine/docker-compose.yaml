@@ -20,8 +20,30 @@ services:
   sftp-sincro:
     image: python-dev:latest
     container_name: sftp-sincro
+    depends_on:
+      - server-local
+      - server-remoto
     environment:
       - DB_CONEXION=${DB_CONEXION}
       - DB_NAME=${DB_NAME}
       - DB_CLL_JOURNAL=${DB_CLL_JOURNAL}
       - DB_CLL_PARAMS=${DB_CLL_PARAMS}
+    labels:
+      ofelia.enabled: "true"
+      ofelia.job-exec.proc_completo.schedule: "@every 90s"
+      ofelia.job-exec.proc_completo.command: "python /app/main.py"
+      #ofelia.job-exec.recuperar.schedule: "@every 60s"
+      #ofelia.job-exec.recuperar.command: "python /app/main_recuperar.py"
+      #ofelia.job-exec.enviar.schedule: "@every 60s"
+      #ofelia.job-exec.enviar.command: "python /app/main_enviar.py"
+      #ofelia.job-exec.eliminar.schedule: "@every 60s"
+      #ofelia.job-exec.eliminar.command: "python /app/main_eliminar.py"
+
+  cron-ofelia:
+    image: mcuadros/ofelia:latest
+    container_name: cron-ofelia
+    depends_on:
+      - sftp-sincro
+    command: daemon --docker
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro

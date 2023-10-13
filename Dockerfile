@@ -17,8 +17,11 @@ ENV DB_CLL_JOURNAL=VALUE
 ENV DB_CLL_PARAMS=VALUE
 
 #Comando para ejecutar proceso principal
-CMD ["python", "main.py"]
+#CMD ["python", "main.py"]
 
 #Comandos para ejecutar comando ciclico
 #ENTRYPOINT ["top", "-b"]
 #CMD ["-c"]
+
+#Configurar para ofelia
+CMD tail -f /dev/null
