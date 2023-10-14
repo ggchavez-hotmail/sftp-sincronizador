@@ -1,6 +1,8 @@
 from servicio_sftp import Sftp_Options
 from servicio_database import Db_Options
 from config_settings import Get_Params
+#import os
+from pathlib import Path
 
 class Tareas():
     def __init__(self, proceso):  
@@ -48,9 +50,10 @@ class Tareas():
                             db = Db_Options(self.params.DBCONEXION, self.params.DBNAME, self.params.DBCLLJOURNAL)
                             count_documents = db.count_documents_by_item(item_buscar)
                             if (count_documents == 0):
+                                prioridad = self.PrioridadExtension(f"{item[0]}")
                                 item_insertar = {"file_name": f"{item[0]}", "st_mode": f"{item[1]}", "st_size": f"{item[2]}",
-                                                "st_atime": f"{item[3]}", "st_mtime": f"{item[4]}", "casilla": casilla["_id"],
-                                                "operacion": f"{self.proceso}" ,"estado": "listado"}
+                                                "st_atime": f"{item[3]}", "st_mtime": f"{item[4]}", "prioridad" : prioridad,
+                                                "casilla": casilla["_id"], "operacion": f"{self.proceso}" ,"estado": "listado"}
                                 db.insert_one(item_insertar)
                                 print("---->insertado - listado")
                     
@@ -79,6 +82,9 @@ class Tareas():
                 remote_path = casilla["remote_path"]
                 
                 if(existe_item_en_db != None):
+                    #ordenar resultado por fecha modificacion (asc) y prioridad (desc)
+                    existe_item_en_db.sort(key=lambda x: (x["st_mtime"], -x["prioridad"]))
+                    
                     for item in existe_item_en_db:
                         
                         id = item['_id']
@@ -119,6 +125,9 @@ class Tareas():
                 remote_path = casilla["local_path"]
                 
                 if(existe_item_en_db != None):
+                    #ordenar resultado por fecha modificacion (asc) y prioridad (desc)
+                    existe_item_en_db.sort(key=lambda x: (x["st_mtime"], -x["prioridad"]))
+                    
                     for item in existe_item_en_db:
                         id = item['_id']
                         file_name = item['file_name']
@@ -242,3 +251,18 @@ class Tareas():
                         sftp.mdelete(f"{local_path}{file_name}")
                     
 
+    def PrioridadExtension(self, archivo):
+        prioridad = 0
+        try:
+            #se extrae extension del archivo 
+            #_, extension = os.path.split(archivo)
+            extension = Path(archivo).suffix
+            #print(f"extension: {extension}")
+            if(extension == ".CTR"):
+                prioridad = 1
+        except Exception as err:
+            print(f"prioridad_extension - err: {err}")
+        finally:
+            return prioridad
+
+        

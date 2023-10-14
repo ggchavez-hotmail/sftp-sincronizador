@@ -12,6 +12,17 @@ print("---------- [PutDestino] -----------")
 enviarArchivos.PutDestino()
 print("--- [Fin - Enviar archivos al Origen] -----------")
 
+#Verificar que archivos se eliminaron del Origen
+print("--- [Inicio - Verificar que archivos eliminados del Origen -----------")
+eliminarArchivosPut = Tareas("put")
+#Marcar los archivos para eliminar en el Destino
+print("---------- [ListToDeleteDestino] -----------")
+eliminarArchivosPut.ListToDeleteDestino()
+#Eliminar archivo del Destino
+print("---------- [DeleteDestino] -----------")
+eliminarArchivosPut.DeleteDestino()
+print("--- [Fin - Verificar que archivos eliminados del Origen -----------")
+
 #Recuperar archivos de Origen
 print("--- [Inicio - Recuperar archivos de Origen] -----------")
 obtenerArchivos = Tareas("get")
@@ -26,11 +37,11 @@ print("--- [Fin - Recuperar archivos de Origen] -----------")
 
 #Verificar que archivos se eliminaron del Origen
 print("--- [Inicio - Verificar que archivos eliminados del Origen -----------")
-eliminarArchivos = Tareas("get")
+eliminarArchivosGet = Tareas("get")
 #Marcar los archivos para eliminar en el Destino
 print("---------- [ListToDeleteDestino] -----------")
-eliminarArchivos.ListToDeleteDestino()
+eliminarArchivosGet.ListToDeleteDestino()
 #Eliminar archivo del Destino
 print("---------- [DeleteDestino] -----------")
-eliminarArchivos.DeleteDestino()
+eliminarArchivosGet.DeleteDestino()
 print("--- [Fin - Verificar que archivos eliminados del Origen -----------")
