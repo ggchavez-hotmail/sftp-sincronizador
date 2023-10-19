@@ -1,47 +1,50 @@
 from operacion import Tareas
 
-#Enviar archivos al Origen
-print("--- [Inicio - Enviar archivos al Origen] -----------")
+# Enviar archivos al Destino
+print("----||Inicio||---")
+print("[Inicio - Enviar archivos al Destino]")
 enviarArchivos = Tareas("put")
-
-print("---------- [ListToGetOrigen] -----------")
-enviarArchivos.ListToGetOrigen()
-print("---------- [GetOrigen] -----------")
+print("<---------- [ListOrigen] ----------->")
+enviarArchivos.ListOrigen()
+print("<---------- [GetOrigen] ----------->")
 enviarArchivos.GetOrigen()
-print("---------- [PutDestino] -----------")
+print("<---------- [PutDestino] ----------->")
 enviarArchivos.PutDestino()
-print("--- [Fin - Enviar archivos al Origen] -----------")
+print("[Fin - Enviar archivos al Destino] ---")
 
-#Verificar que archivos se eliminaron del Origen
-print("--- [Inicio - Verificar que archivos eliminados del Origen -----------")
+print("----||Paso 1||---")
+# Verificar que archivos se eliminaron del Destino
+print("[Inicio - Verificar que archivos eliminados del Destino]")
 eliminarArchivosPut = Tareas("put")
-#Marcar los archivos para eliminar en el Destino
-print("---------- [ListToDeleteDestino] -----------")
+# Marcar los archivos para eliminar en el Destino
+print("<---------- [ListToDeleteDestino] ----------->")
 eliminarArchivosPut.ListToDeleteDestino()
-#Eliminar archivo del Destino
-print("---------- [DeleteDestino] -----------")
-eliminarArchivosPut.DeleteDestino()
-print("--- [Fin - Verificar que archivos eliminados del Origen -----------")
+# Eliminar archivo del Destino
+print("<---------- [DeleteOrigen] ----------->")
+eliminarArchivosPut.DeleteOrigen()
+print("[Fin - Verificar que archivos eliminados del Destino]")
 
-#Recuperar archivos de Origen
-print("--- [Inicio - Recuperar archivos de Origen] -----------")
+print("----||Paso 2||---")
+# Recuperar archivos de Destino
+print("[Inicio - Recuperar archivos de Destion]")
 obtenerArchivos = Tareas("get")
+print("<---------- [ListDestino] ----------->")
+obtenerArchivos.ListDestino()
+print("<---------- [GetDestino] ----------->")
+obtenerArchivos.GetDestino()
+print("<---------- [PutDestino] ----------->")
+obtenerArchivos.PutOrigen()
+print("[Fin - Recuperar archivos de Destion]")
 
-print("---------- [ListToGetOrigen] -----------")
-obtenerArchivos.ListToGetOrigen()
-print("---------- [GetOrigen] -----------")
-obtenerArchivos.GetOrigen()
-print("---------- [PutDestino] -----------")
-obtenerArchivos.PutDestino()
-print("--- [Fin - Recuperar archivos de Origen] -----------")
-
-#Verificar que archivos se eliminaron del Origen
-print("--- [Inicio - Verificar que archivos eliminados del Origen -----------")
+print("----||Paso 3||---")
+# Verificar que archivos se eliminaron del Origen
+print("[Inicio - Verificar que archivos eliminados del Destino]")
 eliminarArchivosGet = Tareas("get")
-#Marcar los archivos para eliminar en el Destino
-print("---------- [ListToDeleteDestino] -----------")
+# Marcar los archivos para eliminar en el Destino
+print("<---------- [ListToDeleteDestino] ----------->")
 eliminarArchivosGet.ListToDeleteDestino()
-#Eliminar archivo del Destino
-print("---------- [DeleteDestino] -----------")
-eliminarArchivosGet.DeleteDestino()
-print("--- [Fin - Verificar que archivos eliminados del Origen -----------")
+# Eliminar archivo del Destino
+print("<---------- [DeleteOrigen] ----------->")
+eliminarArchivosGet.DeleteOrigen()
+print("[Fin - Verificar que archivos eliminados del Destino]")
+print("----||Fin||---")
