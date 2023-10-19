@@ -45,9 +45,8 @@ class Tareas():
                             ver = item[0]
                             print(f"---file_name: {ver}")
 
-                            item_buscar = {"$and": [{"file_name": f"{item[0]}", "st_mode": f"{item[1]}",
-                                                     "st_size": f"{item[2]}", "st_atime": f"{item[3]}", "st_mtime": f"{item[4]}",
-                                                     "casilla": casilla["_id"], "operacion": f"{self.proceso}"},
+                            item_buscar = {"$and": [{"file_name": f"{item[0]}", "st_mode": f"{item[1]}", "st_size": f"{item[2]}"                                                     # , "st_ctime": f"{item[3]}"
+                                                     , "st_mtime": f"{item[4]}", "casilla": casilla["_id"], "operacion": f"{self.proceso}"},
                                                     {"estado": {"$nin": ["eliminar", "eliminado"]}}]}
                             db = Db_Options(
                                 self.params.DBCONEXION, self.params.DBNAME, self.params.DBCLLJOURNAL)
@@ -56,8 +55,8 @@ class Tareas():
                             if (count_documents == 0):
                                 prioridad = self.PrioridadExtension(
                                     f"{item[0]}")
-                                item_insertar = {"file_name": f"{item[0]}", "st_mode": f"{item[1]}", "st_size": f"{item[2]}",
-                                                 "st_atime": f"{item[3]}", "st_mtime": f"{item[4]}", "prioridad": prioridad,
+                                item_insertar = {"file_name": f"{item[0]}", "st_mode": f"{item[1]}", "st_size": f"{item[2]}"                                                 # , "st_ctime": f"{item[3]}"
+                                                 , "st_mtime": f"{item[4]}", "prioridad": prioridad,
                                                  "casilla": casilla["_id"], "operacion": f"{self.proceso}", "estado": "listado"}
                                 db.insert_one(item_insertar)
                                 print("---->insertado - listado")
@@ -89,9 +88,8 @@ class Tareas():
                             ver = item[0]
                             print(f"---file_name: {ver}")
 
-                            item_buscar = {"$and": [{"file_name": f"{item[0]}", "st_mode": f"{item[1]}",
-                                                     "st_size": f"{item[2]}", "st_atime": f"{item[3]}", "st_mtime": f"{item[4]}",
-                                                     "casilla": casilla["_id"], "operacion": f"{self.proceso}"},
+                            item_buscar = {"$and": [{"file_name": f"{item[0]}", "st_mode": f"{item[1]}", "st_size": f"{item[2]}"                                                    # , "st_ctime": f"{item[3]}"
+                                                     , "st_mtime": f"{item[4]}", "casilla": casilla["_id"], "operacion": f"{self.proceso}"},
                                                     {"estado": {"$nin": ["eliminar", "eliminado"]}}]}
                             db = Db_Options(
                                 self.params.DBCONEXION, self.params.DBNAME, self.params.DBCLLJOURNAL)
@@ -100,8 +98,8 @@ class Tareas():
                             if (count_documents == 0):
                                 prioridad = self.PrioridadExtension(
                                     f"{item[0]}")
-                                item_insertar = {"file_name": f"{item[0]}", "st_mode": f"{item[1]}", "st_size": f"{item[2]}",
-                                                 "st_atime": f"{item[3]}", "st_mtime": f"{item[4]}", "prioridad": prioridad,
+                                item_insertar = {"file_name": f"{item[0]}", "st_mode": f"{item[1]}", "st_size": f"{item[2]}"                                                 # ,"st_ctime": f"{item[3]}"
+                                                 , "st_mtime": f"{item[4]}", "prioridad": prioridad,
                                                  "casilla": casilla["_id"], "operacion": f"{self.proceso}", "estado": "listado"}
                                 db.insert_one(item_insertar)
                                 print("---->insertado - listado")
@@ -313,7 +311,7 @@ class Tareas():
                         for item in resultado:
                             # item_buscar = { "$and" : [
                             #                {"file_name": f"{item[0]}", "st_mode": f"{item[1]}",
-                            #                 "st_size": f"{item[2]}", "st_atime": f"{item[3]}", "st_mtime": f"{item[4]}",
+                            #                 "st_size": f"{item[2]}", "st_ctime": f"{item[3]}", "st_mtime": f"{item[4]}",
                             #                 "casilla": casilla["_id"], "operacion": f"{self.proceso}"},
                             #                {"estado": { "$nin" : ["eliminar","eliminado"] } }]}
 

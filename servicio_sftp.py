@@ -7,11 +7,11 @@ msg_status = None
 sftp = None
 
 
-class Sftp_Options:    
+class Sftp_Options:
     def __init__(self, sftp_url, privateKeyFilePath):
-        #print(f"sftp_url: {sftp_url}")
-        #print(f"privateKeyFilePath: {privateKeyFilePath}")
-        
+        # print(f"sftp_url: {sftp_url}")
+        # print(f"privateKeyFilePath: {privateKeyFilePath}")
+
         if sftp_url:
             parsed_url = urlparse(sftp_url)
 
@@ -35,6 +35,9 @@ class Sftp_Options:
             resultado = self.sftp.listdir_attr(path_list)
             lista = []
             for file in resultado:
+                # st_atime - last time the file was accessed.
+                # st_mtime - last time the file's CONTENTS were changed
+                # st_ctime - the last time the file's inode was changed (e.g. permissions changed, file renamed, etc..)
                 elemento = [file.filename, file.st_mode, file.st_size,
                             file.st_atime, file.st_mtime]
                 lista.append(elemento)
@@ -51,7 +54,7 @@ class Sftp_Options:
             # Disconnect from SFTP
             self.sftp.disconnect()
 
-    def get(self, local_path, remote_path):        
+    def get(self, local_path, remote_path):
         try:
             # Connect to SFTP
             self.sftp.connect()
