@@ -1,14 +1,13 @@
 from operacion import Tareas
 
-#Recuperar archivos de Origen
-print("--- [Inicio - Recuperar archivos de Origen] -----------")
+print("----||Paso 2||---")
+# Recuperar archivos de Destino
+print("[Inicio - Recuperar archivos de Destion]")
 obtenerArchivos = Tareas("get")
-
-print("---------- [ListToGetOrigen] -----------")
-obtenerArchivos.ListToGetOrigen()
-print("---------- [GetOrigen] -----------")
-obtenerArchivos.GetOrigen()
-print("---------- [PutDestino] -----------")
-obtenerArchivos.PutDestino()
-print("--- [Fin - Recuperar archivos de Origen] -----------")
-
+print("<---------- [ListDestino] ----------->")
+obtenerArchivos.ListDestino()
+print("<---------- [GetDestino] ----------->")
+obtenerArchivos.GetDestino()
+print("<---------- [PutDestino] ----------->")
+obtenerArchivos.PutOrigen()
+print("[Fin - Recuperar archivos de Destion]")

@@ -1,13 +1,13 @@
 from operacion import Tareas
 
-#Enviar archivos al Origen
-print("--- [Inicio - Enviar archivos al Origen] -----------")
-enviarArchivos = Tareas("put")
-
-print("---------- [ListToGetOrigen] -----------")
-enviarArchivos.ListToGetOrigen()
-print("---------- [GetOrigen] -----------")
-enviarArchivos.GetOrigen()
-print("---------- [PutDestino] -----------")
-enviarArchivos.PutDestino()
-print("--- [Fin - Enviar archivos al Origen] -----------")
+print("----||Paso 1||---")
+# Verificar que archivos se eliminaron del Destino
+print("[Inicio - Verificar que archivos eliminados del Destino]")
+eliminarArchivosPut = Tareas("put")
+# Marcar los archivos para eliminar en el Destino
+print("<---------- [ListToDeleteDestino] ----------->")
+eliminarArchivosPut.ListToDeleteDestino()
+# Eliminar archivo del Destino
+print("<---------- [DeleteOrigen] ----------->")
+eliminarArchivosPut.DeleteOrigen()
+print("[Fin - Verificar que archivos eliminados del Destino]")
