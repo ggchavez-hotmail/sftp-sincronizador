@@ -9,12 +9,13 @@ WORKDIR /app
 ADD requirements.txt .
 RUN pip install -r requirements.txt
 
-ADD . .
+ADD src/. .
 
 ENV DB_CONEXION=VALUE
 ENV DB_NAME=VALUE
 ENV DB_CLL_JOURNAL=VALUE
 ENV DB_CLL_PARAMS=VALUE
+ENV ENCRYPTION_KEY=VALUE
 
 #Comando para ejecutar proceso principal
 #CMD ["python", "main.py"]

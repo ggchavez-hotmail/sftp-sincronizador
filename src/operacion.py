@@ -1,19 +1,53 @@
+from logzero import logger
 from servicio_sftp import Sftp_Options
 from servicio_database import Db_Options
 from config_settings import Get_Params
 #import os
 from pathlib import Path
+from criptor import Criptor
 
 class Tareas():
     def __init__(self, proceso):  
         self.proceso = proceso   
         self.params = Get_Params()
-    
+        self.criptor = Criptor()
+        
+    def verificar_estado_proceso(self):
+        item_buscar = { "proceso_activo": "true" }
+        db = Db_Options(self.params.DBCONEXION, self.params.DBNAME, "validar")
+        count_documents = db.count_documents_by_item(item_buscar)
+        if (count_documents == 0):
+            item_insertar = {"proceso_activo": "true"}
+            db.insert_one(item_insertar)
+            logger.info("Proceso nuevo")
+        else:
+            logger.info("Existe un proceso activo")
+            
+        return count_documents
+            
+    def actualizar_estado_proceso(self):
+        db = Db_Options(self.params.DBCONEXION, self.params.DBNAME, "validar")
+        db.update_many({ "proceso_activo": "true" },
+                                { "$set": {"proceso_activo": "false"}})
+        logger.info("Proceso finalizado")
+        
     def recuperar_casillas(self):
         # Recuperar datos parametros
         self.db = Db_Options(self.params.DBCONEXION, self.params.DBNAME, self.params.DBCLLPARAMS)
         casillas = self.db.find_item({"operacion": f"{self.proceso}" })
-                    
+        
+        # Desencriptar
+        if(casillas != None):
+            for casilla in casillas:
+                casilla["privateKeyFilePath"] = self.criptor.decrypt(casilla["privateKeyFilePath"])
+                casilla["local_sftp_purl"] = self.criptor.decrypt(casilla["local_sftp_purl"])
+                casilla["local_path"] = self.criptor.decrypt(casilla["local_path"])
+                casilla["remote_sftp_purl"] = self.criptor.decrypt(casilla["remote_sftp_purl"])
+                casilla["remote_list_path"] = self.criptor.decrypt(casilla["remote_list_path"])
+                casilla["remote_path"] = self.criptor.decrypt(casilla["remote_path"])
+                casilla["pivot_path"] = self.criptor.decrypt(casilla["pivot_path"])
+        
+        #print(casillas)
         return casillas
         
     def ListToGetOrigen(self):
@@ -23,25 +57,25 @@ class Tareas():
         if(casillas != None):
             ver = casillas[0]
             ver = ver["remote_sftp_purl"]
-            print(f"-remote_sftp_purl: {ver}")
+            logger.info(f"-remote_sftp_purl: {ver}")
                 
             for casilla in casillas:
-                #print(casilla)
+                #logger.info(casilla)
 
                 sftp = Sftp_Options(casilla["remote_sftp_purl"],
                                     casilla["privateKeyFilePath"])
 
                 resultado = sftp.listdir_attr(casilla["remote_list_path"])
-                #print(f"codigo retorno: {sftp.cod_status}")
-                #print(f"mensaje retorno: {sftp.msg_status}")
-                #print(resultado)
+                #logger.info(f"codigo retorno: {sftp.cod_status}")
+                #logger.info(f"mensaje retorno: {sftp.msg_status}")
+                #logger.info(resultado)
                 
                 # Que no hubo error al recuperar datos
                 if (sftp.cod_status == 0):
                     if (resultado != None):
                         for item in resultado:
                             ver = item[0]
-                            print(f"---file_name: {ver}")
+                            logger.info(f"---file_name: {ver}")
                             
                             item_buscar = { "$and" : [{"file_name": f"{item[0]}", "st_mode": f"{item[1]}",
                                         "st_size": f"{item[2]}", "st_atime": f"{item[3]}", "st_mtime": f"{item[4]}",
@@ -55,7 +89,7 @@ class Tareas():
                                                 "st_atime": f"{item[3]}", "st_mtime": f"{item[4]}", "prioridad" : prioridad,
                                                 "casilla": casilla["_id"], "operacion": f"{self.proceso}" ,"estado": "listado"}
                                 db.insert_one(item_insertar)
-                                print("---->insertado - listado")
+                                logger.info("---->insertado - listado")
                     
 
     def GetOrigen(self):        
@@ -65,10 +99,10 @@ class Tareas():
         if(casillas != None):
             ver = casillas[0]
             ver = ver["remote_sftp_purl"]
-            print(f"-remote_sftp_purl: {ver}")
+            logger.info(f"-remote_sftp_purl: {ver}")
             
             for casilla in casillas:
-                #print(casilla)
+                #logger.info(casilla)
 
                 sftp = Sftp_Options(casilla["remote_sftp_purl"],
                                     casilla["privateKeyFilePath"])
@@ -76,8 +110,8 @@ class Tareas():
                 db = Db_Options(self.params.DBCONEXION, self.params.DBNAME, self.params.DBCLLJOURNAL)
                 existe_item_en_db = db.find_item(
                     {"casilla": casilla["_id"], "operacion": f"{self.proceso}", "estado": "listado"})
-                #print(casilla["pivot_path"])
-                #print(casilla["remote_path"])
+                #logger.info(casilla["pivot_path"])
+                #logger.info(casilla["remote_path"])
                 local_path = casilla["pivot_path"]
                 remote_path = casilla["remote_path"]
                 
@@ -89,17 +123,17 @@ class Tareas():
                         
                         id = item['_id']
                         file_name = item['file_name']
-                        #print(f"id: {id}")
-                        print(f"---file_name: {file_name}")
+                        #logger.info(f"id: {id}")
+                        logger.info(f"---file_name: {file_name}")
                         
                         sftp.mget(f"{local_path}{file_name}",
                                 f"{remote_path}{file_name}")
-                        #print(f"codigo retorno: {sftp.cod_status}")
-                        #print(f"mensaje retorno: {sftp.msg_status}")
+                        #logger.info(f"codigo retorno: {sftp.cod_status}")
+                        #logger.info(f"mensaje retorno: {sftp.msg_status}")
                         if (sftp.cod_status == 0):
                             db.update_one({"_id": id}, {
                                 "$set": {"estado": "recuperado"}})
-                            print("---->actualizado - recuperado")
+                            logger.info("---->actualizado - recuperado")
 
     def PutDestino(self):
         # Recuperar datos parametros
@@ -108,10 +142,10 @@ class Tareas():
         if(casillas != None):
             ver = casillas[0]
             ver = ver["local_sftp_purl"]
-            print(f"-local_sftp_purl: {ver}")
+            logger.info(f"-local_sftp_purl: {ver}")
             
             for casilla in casillas:
-                #print(casilla)
+                #logger.info(casilla)
 
                 sftp = Sftp_Options(casilla["local_sftp_purl"],
                                     casilla["privateKeyFilePath"])
@@ -119,8 +153,8 @@ class Tareas():
                 db = Db_Options(self.params.DBCONEXION, self.params.DBNAME, self.params.DBCLLJOURNAL)
                 existe_item_en_db = db.find_item(
                     {"casilla": casilla["_id"], "operacion": f"{self.proceso}", "estado": "recuperado"})
-                #print(casilla["pivot_path"])
-                #print(casilla["local_path"])
+                #logger.info(casilla["pivot_path"])
+                #logger.info(casilla["local_path"])
                 local_path = casilla["pivot_path"]
                 remote_path = casilla["local_path"]
                 
@@ -131,17 +165,17 @@ class Tareas():
                     for item in existe_item_en_db:
                         id = item['_id']
                         file_name = item['file_name']
-                        #print(f"id: {id}")
-                        print(f"---file_name: {file_name}")
+                        #logger.info(f"id: {id}")
+                        logger.info(f"---file_name: {file_name}")
                         
                         sftp.mput(f"{local_path}{file_name}",
                                 f"{remote_path}{file_name}")
-                        #print(f"codigo retorno: {sftp.cod_status}")
-                        #print(f"mensaje retorno: {sftp.msg_status}")
+                        #logger.info(f"codigo retorno: {sftp.cod_status}")
+                        #logger.info(f"mensaje retorno: {sftp.msg_status}")
                         if (sftp.cod_status == 0):
                             db.update_one({"_id": id}, {
                                 "$set": {"estado": "finalizado"}})
-                            print("---->actualizado - finalizado")
+                            logger.info("---->actualizado - finalizado")
         
     def ListToDeleteDestino(self):
         # Recuperar datos parametros
@@ -150,18 +184,18 @@ class Tareas():
         if(casillas != None):
             ver = casillas[0]
             ver = ver["remote_sftp_purl"]
-            print(f"-remote_sftp_purl: {ver}")
+            logger.info(f"-remote_sftp_purl: {ver}")
             
             for casilla in casillas:
-                #print(casilla)
+                #logger.info(casilla)
 
                 sftp = Sftp_Options(casilla["remote_sftp_purl"],
                                     casilla["privateKeyFilePath"])
 
                 resultado = sftp.listdir_attr(casilla["remote_list_path"])
-                #print(f"codigo retorno: {sftp.cod_status}")
-                #print(f"mensaje retorno: {sftp.msg_status}")
-                #print(resultado)
+                #logger.info(f"codigo retorno: {sftp.cod_status}")
+                #logger.info(f"mensaje retorno: {sftp.msg_status}")
+                #logger.info(resultado)
                 
                 items_omitir = []
                 db = Db_Options(self.params.DBCONEXION, self.params.DBNAME, self.params.DBCLLJOURNAL)
@@ -176,7 +210,7 @@ class Tareas():
                             #                {"estado": { "$nin" : ["eliminar","eliminado"] } }]}
                             
                             ver = item[0]
-                            print(f"---file_name: {ver}")
+                            logger.info(f"---file_name: {ver}")
                             
                             #Solo interesa el nombre del archivo.
                             item_buscar = { "$and" : [
@@ -185,15 +219,15 @@ class Tareas():
                                                      ]}
                             
                             items_encontrados = db.find_item(item_buscar)
-                            #print(f"items_encontrados: {items_encontrados}")
+                            #logger.info(f"items_encontrados: {items_encontrados}")
                             if(items_encontrados != None):
                                 for item_encontrado in items_encontrados:
-                                    #print(f"item_encontrado: {item_encontrado}")
+                                    #logger.info(f"item_encontrado: {item_encontrado}")
                                     id = item_encontrado["_id"]
-                                    #print(f"----id: {id}")
+                                    #logger.info(f"----id: {id}")
                                     items_omitir.append(id)
                 
-                #print(f"items_omitir: {items_omitir}")
+                #logger.info(f"items_omitir: {items_omitir}")
                 if (items_omitir != []):
                     db.update_many({ "$and" : [
                                     { "_id": { "$nin" : items_omitir } }, 
@@ -201,14 +235,14 @@ class Tareas():
                                     {"estado": { "$nin" : ["eliminar","eliminado"] } }
                                               ]},
                                 { "$set": {"estado": "eliminar"}})
-                    print("---->actualizado - eliminar (omitiendo)")
+                    logger.info("---->actualizado - eliminar (omitiendo)")
                 else:
                     db.update_many({ "$and" :[
                                      { "casilla": casilla["_id"], "operacion": f"{self.proceso}" },
                                      {"estado": { "$nin" : ["eliminar","eliminado"] } }
                                              ]},
                                 { "$set": {"estado": "eliminar"}})
-                    print("---->actualizado - eliminar")
+                    logger.info("---->actualizado - eliminar")
             
     def DeleteDestino(self):
         # Recuperar datos parametros
@@ -217,10 +251,10 @@ class Tareas():
         if(casillas != None):
             ver = casillas[0]
             ver = ver["local_sftp_purl"]
-            print(f"-local_sftp_purl: {ver}")
+            logger.info(f"-local_sftp_purl: {ver}")
             
             for casilla in casillas:
-                #print(casilla)
+                #logger.info(casilla)
 
                 sftp = Sftp_Options(casilla["local_sftp_purl"],
                                     casilla["privateKeyFilePath"])
@@ -228,8 +262,8 @@ class Tareas():
                 db = Db_Options(self.params.DBCONEXION, self.params.DBNAME, self.params.DBCLLJOURNAL)
                 existe_item_en_db = db.find_item(
                     {"casilla": casilla["_id"], "operacion": f"{self.proceso}", "estado": "eliminar"})
-                #print(casilla["pivot_path"])
-                #print(casilla["local_path"])
+                #logger.info(casilla["pivot_path"])
+                #logger.info(casilla["local_path"])
                 local_path = casilla["pivot_path"]
                 remote_path = casilla["local_path"]
                 
@@ -237,16 +271,16 @@ class Tareas():
                     for item in existe_item_en_db:
                         id = item['_id']
                         file_name = item['file_name']
-                        #print(f"id: {id}")
-                        print(f"---file_name: {file_name}")
+                        #logger.info(f"id: {id}")
+                        logger.info(f"---file_name: {file_name}")
                         
                         sftp.mdelete(f"{remote_path}{file_name}")
-                        #print(f"codigo retorno: {sftp.cod_status}")
-                        #print(f"mensaje retorno: {sftp.msg_status}")
+                        #logger.info(f"codigo retorno: {sftp.cod_status}")
+                        #logger.info(f"mensaje retorno: {sftp.msg_status}")
                         if (sftp.cod_status == 0):
                             db.update_one({"_id": id}, {
                                 "$set": {"estado": "eliminado"}})
-                            print("---->actualizado - eliminado")
+                            logger.info("---->actualizado - eliminado")
                             
                         sftp.mdelete(f"{local_path}{file_name}")
                     
@@ -257,11 +291,11 @@ class Tareas():
             #se extrae extension del archivo 
             #_, extension = os.path.split(archivo)
             extension = Path(archivo).suffix
-            #print(f"extension: {extension}")
+            #logger.info(f"extension: {extension}")
             if(extension == ".CTR"):
                 prioridad = 1
         except Exception as err:
-            print(f"prioridad_extension - err: {err}")
+            logger.info(f"prioridad_extension - err: {err}")
         finally:
             return prioridad
 

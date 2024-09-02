@@ -7,6 +7,8 @@ name = "pypi"
 pysftp = "*"
 python-dotenv = "*"
 pymongo = "*"
+logzero = "*"
+pycryptodome = "*"
 
 [dev-packages]
 

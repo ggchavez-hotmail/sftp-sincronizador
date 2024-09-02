@@ -8,6 +8,13 @@ services:
       - 3000:22
     volumes:
       - .remoto:/home/test
+    environment:
+      - TZ="America/Santiago"
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
     #command: bash -c "sh .script-server-local.sh" #no funcion
   server-local:
     image: gchavezvs2019/server-ssh-alpine
@@ -16,21 +23,32 @@ services:
       - 3001:22
     volumes:
       - .local:/home/test
+    environment:
+      - TZ="America/Santiago"
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
     #command: bash -c "sh .script-server-local.sh" #no funcion
   sftp-sincro:
-    image: python-dev:latest
+    image: gchavezvs2019/sftp-sincro:v2
     container_name: sftp-sincro
     depends_on:
       - server-local
       - server-remoto
     environment:
-      - DB_CONEXION=${DB_CONEXION}
-      - DB_NAME=${DB_NAME}
-      - DB_CLL_JOURNAL=${DB_CLL_JOURNAL}
-      - DB_CLL_PARAMS=${DB_CLL_PARAMS}
+      - DB_CONEXION=mongodb+srv://conexion
+      - DB_NAME=BD_NAME
+      - DB_CLL_JOURNAL=DOCUMENTO
+      - DB_CLL_PARAMS=CONFIG #nombre de la tabla donde quedan las configuraciones
+      - ENCRYPTION_KEY=KEY #
+      - BLOQUES=1024
+      - TZ="America/Santiago"
     labels:
       ofelia.enabled: "true"
-      ofelia.job-exec.proc_completo.schedule: "@every 90s"
+      ofelia.job-exec.proc_completo.schedule: "0 26 19 * * *" #seg min hour day(month) month day(week)
+      #ofelia.job-exec.proc_completo.schedule: "@every 30s"
       ofelia.job-exec.proc_completo.command: "python /app/main.py"
       #ofelia.job-exec.recuperar.schedule: "@every 60s"
       #ofelia.job-exec.recuperar.command: "python /app/main_recuperar.py"
@@ -38,6 +56,11 @@ services:
       #ofelia.job-exec.enviar.command: "python /app/main_enviar.py"
       #ofelia.job-exec.eliminar.schedule: "@every 60s"
       #ofelia.job-exec.eliminar.command: "python /app/main_eliminar.py"
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
 
   cron-ofelia:
     image: mcuadros/ofelia:latest
@@ -47,3 +70,10 @@ services:
     command: daemon --docker
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      - TZ="America/Santiago"
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
