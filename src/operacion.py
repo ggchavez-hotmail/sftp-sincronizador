@@ -10,7 +10,7 @@ class Tareas():
     def __init__(self, proceso):  
         self.proceso = proceso   
         self.params = Get_Params()
-        self.criptor = Criptor()
+        self.criptor = Criptor(self.params.ENCRYPTION_KEY)
         
     def verificar_estado_proceso(self):
         item_buscar = { "proceso_activo": "true" }
@@ -63,7 +63,8 @@ class Tareas():
                 #logger.info(casilla)
 
                 sftp = Sftp_Options(casilla["remote_sftp_purl"],
-                                    casilla["privateKeyFilePath"])
+                                    casilla["privateKeyFilePath"], 
+                                    self.params.BLOQUES)
 
                 resultado = sftp.listdir_attr(casilla["remote_list_path"])
                 #logger.info(f"codigo retorno: {sftp.cod_status}")
@@ -105,7 +106,8 @@ class Tareas():
                 #logger.info(casilla)
 
                 sftp = Sftp_Options(casilla["remote_sftp_purl"],
-                                    casilla["privateKeyFilePath"])
+                                    casilla["privateKeyFilePath"], 
+                                    self.params.BLOQUES)
 
                 db = Db_Options(self.params.DBCONEXION, self.params.DBNAME, self.params.DBCLLJOURNAL)
                 existe_item_en_db = db.find_item(
@@ -148,7 +150,8 @@ class Tareas():
                 #logger.info(casilla)
 
                 sftp = Sftp_Options(casilla["local_sftp_purl"],
-                                    casilla["privateKeyFilePath"])
+                                    casilla["privateKeyFilePath"], 
+                                    self.params.BLOQUES)
 
                 db = Db_Options(self.params.DBCONEXION, self.params.DBNAME, self.params.DBCLLJOURNAL)
                 existe_item_en_db = db.find_item(
@@ -190,7 +193,8 @@ class Tareas():
                 #logger.info(casilla)
 
                 sftp = Sftp_Options(casilla["remote_sftp_purl"],
-                                    casilla["privateKeyFilePath"])
+                                    casilla["privateKeyFilePath"], 
+                                    self.params.BLOQUES)
 
                 resultado = sftp.listdir_attr(casilla["remote_list_path"])
                 #logger.info(f"codigo retorno: {sftp.cod_status}")
@@ -257,7 +261,8 @@ class Tareas():
                 #logger.info(casilla)
 
                 sftp = Sftp_Options(casilla["local_sftp_purl"],
-                                    casilla["privateKeyFilePath"])
+                                    casilla["privateKeyFilePath"], 
+                                    self.params.BLOQUES)
 
                 db = Db_Options(self.params.DBCONEXION, self.params.DBNAME, self.params.DBCLLJOURNAL)
                 existe_item_en_db = db.find_item(

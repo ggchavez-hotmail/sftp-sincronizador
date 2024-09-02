@@ -4,8 +4,8 @@ from Crypto.Util.Padding import pad, unpad
 
 import base64
 class Criptor():
-    def __init__(self):     
-        key = os.getenv('ENCRYPTION_KEY')
+    def __init__(self, key):     
+        #key = os.getenv('ENCRYPTION_KEY')
         if key is None:
             raise ValueError("No encryption key found in environment variables.")
         self.key = key.encode()[:32]  # Asegurarse de que la llave tenga 32 bytes para AES-256

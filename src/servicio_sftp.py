@@ -8,7 +8,7 @@ sftp = None
 
 
 class Sftp_Options:    
-    def __init__(self, sftp_url, privateKeyFilePath):
+    def __init__(self, sftp_url, privateKeyFilePath, blocks):
         #print(f"sftp_url: {sftp_url}")
         #print(f"privateKeyFilePath: {privateKeyFilePath}")
         
@@ -21,6 +21,7 @@ class Sftp_Options:
                 password=parsed_url.password,
                 port=parsed_url.port,
                 privateKeyFilePath=privateKeyFilePath,
+                blocks=blocks
             )
         else:
             self.cod_status = 1

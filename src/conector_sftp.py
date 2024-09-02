@@ -1,10 +1,8 @@
-import pysftp
+import paramiko
 import os
 
-class Sftp:
-    connection = None
-    
-    def __init__(self, hostname, username, password, port, privateKeyFilePath):
+class Sftp:    
+    def __init__(self, hostname, username, password, port, privateKeyFilePath, blocks):
         """Constructor Method"""
         self.hostname = hostname  #
         self.username = username  #
@@ -12,6 +10,8 @@ class Sftp:
         self.port = port  #
         # Lugar donde se almacena clave privada
         self.privateKeyFilePath = privateKeyFilePath
+        #self.blocks = int(blocks)
+        self.blocks = 1024 * 1024
         # Print datos
         #print(self.hostname)
         #print(self.username)
@@ -24,21 +24,13 @@ class Sftp:
 
         try:
             # Connection Options
-            cnOpts = pysftp.CnOpts()
-            cnOpts.hostkeys = None
-            #cnOpts.hostkeys.load(self.privateKeyFilePath)
-            #cnOpts.hostkeys.add(self.hostname, 'ssh-rsa', self.privateKeyFilePath) 
-
+            self.ssh_client = paramiko.SSHClient()
+            self.ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            self.ssh_client.connect(self.hostname, self.port, self.username, self.password)
+            
             # Get the sftp connection object
-            self.connection = pysftp.Connection(
-                host=self.hostname,
-                username=self.username,
-                password=self.password,
-                port=self.port,
-                private_key=self.privateKeyFilePath,
-                cnopts=cnOpts,
-            )
-            #print(f"Connected to {self.hostname} as {self.username}.")
+            self.sftp = self.ssh_client.open_sftp()
+            print(f"Connected to {self.hostname} as {self.username}.")
         except Exception as err:
             print(f"connect - err: {err}")
             raise Exception(err)            
@@ -46,8 +38,9 @@ class Sftp:
     def disconnect(self):
         try:
             """Closes the sftp connection"""
-            self.connection.close()
-            #print(f"Disconnected from host {self.hostname}")
+            self.sftp.close()
+            self.ssh_client.close()
+            print(f"Disconnected from host {self.hostname}")
         except Exception as err:
             print(f"disconnect - err: {err}")
             raise Exception(err)
@@ -55,8 +48,8 @@ class Sftp:
     def listdir(self, remote_path):
         """lists all the files and directories in the specified path and returns them"""
         try:
-            #print(f"list from {remote_path}")
-            for obj in self.connection.listdir(remote_path):
+            print(f"list from {remote_path}")
+            for obj in self.sftp.listdir(remote_path):
                 yield obj
                 
         except Exception as err:            
@@ -66,8 +59,8 @@ class Sftp:
     def listdir_attr(self, remote_path):
         """lists all the files and directories (with their attributes) in the specified path and returns them"""
         try:
-            #print(f"list with attribute from {remote_path}")
-            for attr in self.connection.listdir_attr(remote_path):
+            print(f"list with attribute from {remote_path}")
+            for attr in self.sftp.listdir_attr(remote_path):
                 yield attr
                 
         except Exception as err:            
@@ -81,9 +74,7 @@ class Sftp:
         """
 
         try:
-            #print(f"downloading from {self.hostname} as {self.username} 
-            #      [(remote path : {remote_path});(local path: {target_local_path})]"
-            #)
+            print(f"downloading from {self.hostname} as {self.username} [(remote path : {remote_path});(local path: {target_local_path})]")
 
             # Create the target directory if it does not exist
             path, _ = os.path.split(target_local_path)
@@ -94,8 +85,16 @@ class Sftp:
                     raise Exception(err)
 
             # Download from remote sftp server to local
-            self.connection.get(remote_path, target_local_path)
-            #print("download completed")
+            #self.sftp.get(remote_path, target_local_path)
+            
+            with self.sftp.open(remote_path, 'rb') as archivo_remoto:
+                while True:
+                    datos = archivo_remoto.read(self.blocks)
+                    if not datos:
+                        break
+                    yield datos
+            
+            print("download completed")
 
         except Exception as err:
             print(f"download - err: {err}")
@@ -107,13 +106,20 @@ class Sftp:
         """
 
         try:
-            #print(f"uploading to {self.hostname} as {self.username} 
-            #      [(remote path: {remote_path});(source local path: {source_local_path})]"
-            #)
+            print(f"uploading to {self.hostname} as {self.username} [(remote path: {remote_path});(source local path: {source_local_path})]" )
 
             # Download file from SFTP
-            self.connection.put(source_local_path, remote_path)
-            #print("upload completed")
+            #self.sftp.put(source_local_path, remote_path)
+            
+            with open(source_local_path, 'rb') as archivo_local:
+                with self.sftp.open(remote_path, 'wb') as archivo_remoto:
+                    while True:
+                        datos = archivo_local.read(self.blocks)
+                        if not datos:
+                            break
+                        archivo_remoto.write(datos)
+            
+            print("upload completed")
 
         except Exception as err:
             print(f"upload - err: {err}")
@@ -139,7 +145,7 @@ class Sftp:
                     raise Exception(err)
 
             # Download from remote sftp server to local
-            self.connection.get(remote_path, target_local_path)
+            self.sftp.get(remote_path, target_local_path)
             #print("download completed")
 
         except Exception as err:
@@ -157,7 +163,7 @@ class Sftp:
             #)
 
             # Download file from SFTP
-            self.connection.put(source_local_path, remote_path)
+            self.sftp.put(source_local_path, remote_path)
             #print("upload completed")
 
         except Exception as err:
@@ -175,7 +181,7 @@ class Sftp:
             #)
 
             # Download file from SFTP
-            self.connection.remove(remote_path)
+            self.sftp.remove(remote_path)
             #print("delete completed")
 
         except Exception as err:            
