@@ -43,7 +43,6 @@ services:
       - DB_CLL_JOURNAL=DOCUMENTO
       - DB_CLL_PARAMS=CONFIG #nombre de la tabla donde quedan las configuraciones
       - ENCRYPTION_KEY=KEY #
-      - BLOQUES=1024
       - TZ="America/Santiago"
     labels:
       ofelia.enabled: "true"
